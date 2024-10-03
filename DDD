@@ -1,7 +1,7 @@
 import csv
 
 # Initialiser fem tomme lister
-list1, list2, list3, list4, list5 = [], [], [], [], []
+Datoliste, Sekundliste, list3, list4, list5 = [], [], [], [], []
 
 # Åpne CSV-filen
 with open('trykk_og_temperaturlogg_rune_time.csv.txt', newline='') as csvfile:
@@ -10,20 +10,33 @@ with open('trykk_og_temperaturlogg_rune_time.csv.txt', newline='') as csvfile:
     # Gå gjennom hver rad i CSV-filen
     for row in csvreader:
         if len(row) == 5:
-            list1.append(row[0])
-            list2.append(row[1])
-            list3.append(row[2])
-            list4.append(row[3])
-            list5.append(row[4])
+            if not any("am" in cell.lower() or "pm" in cell.lower() for cell in row):
+                Datoliste.append(row[0])
+                Sekundliste.append(row[1])
+                list3.append(row[2])
+                list4.append(row[3])
+                list5.append(row[4])
     
-del list1[0]
-del list2[0]
+del Datoliste[0]
+del Sekundliste[0]
 del list3[0]
 del list4[0]
 del list5[0]
-# Skriv ut de fem listene
-print("Liste 1:", list1[0])
-print("Liste 2:", list2[1])
-print("Liste 3:", list3[12])
-print("Liste 4:", list4[1])
-print("Liste 5:", list5[1])
+
+
+from datetime import datetime, timedelta
+
+
+# Liste for å lagre de kombinerte tidsverdiene
+tidsverdier = []
+
+# Gå gjennom begge listene samtidig
+for dt_str, sekunder in zip(Datoliste, Sekundliste):
+    # Konverter strengen til et datetime-objekt
+    dt_obj = datetime.strptime(dt_str, "%m.%d.%Y %H:%M")
+    
+    # Legg til sekundene
+    dt_obj += timedelta(seconds=int(sekunder))
+    
+    # Legg til den kombinerte tidsverdien i listen
+    tidsverdier.append(dt_obj)
