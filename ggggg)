@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
 """
+Created on Thu Oct  3 15:43:23 2024
+
+@author: leidu
+"""
+
+# -*- coding: utf-8 -*-
+"""
 Created on Thu Oct  3 15:29:14 2024
 
 @author: stian
@@ -86,6 +93,18 @@ list5 = [float(value.replace(',', '.')) for value in list5]
 n = 30
 avg_times, avg_temps = moving_average(tidsverdier, list5, n)
 
+# Filtrer dataene for perioden 11. juni 2021 kl. 17:31 til 12. juni 2021 kl. 03:05
+start_time = datetime.strptime("06.11.2021 17:31", "%m.%d.%Y %H:%M")
+end_time = datetime.strptime("06.12.2021 03:05", "%m.%d.%Y %H:%M")
+
+startindeks = tidsverdier.index(datetime.strptime("06.11.2021 17:31", "%m.%d.%Y %H:%M"))
+endineks = tidsverdier.index(datetime.strptime("06.12.2021 03:05", "%m.%d.%Y %H:%M"))
+starttemp = list5[startindeks]
+endtemp = list5[endineks]
+
+tempfalltid = [datetime.strptime("06.11.2021 17:31", "%m.%d.%Y %H:%M"), datetime.strptime("06.12.2021 03:05", "%m.%d.%Y %H:%M")]
+tempfalltemp = [starttemp, endtemp]
+
 # Lag en figur og en akse
 fig, ax = plt.subplots()
 
@@ -96,11 +115,14 @@ ax.plot(tidsverdier, list5, label='Temperatur fra første fil', color='blue')
 ax.plot(tidfil2, tempfil2, label='Temperatur fra andre fil', color='green')
 
 # Plott gjennomsnittsverdiene
-ax.plot(avg_times, avg_temps, label='Gjennomsnittstemperatur (n=30)', color='orange')
+ax.plot(avg_times, avg_temps, label='Gjennomsnittstemperatur', color='orange')
+
+ax.plot(tempfalltid, tempfalltemp, label='Temperaturfall', color='red')
+
 
 # Legg til etiketter og tittel
 ax.set(xlabel='Tid', ylabel='Temperatur',
-       title='Temperatur over Tid fra to forskjellige filer')
+       title='Temperatur (Celsius')
 
 # Legg til en legende
 ax.legend()
