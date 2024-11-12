@@ -1,0 +1,322 @@
+import csv
+from datetime import datetime, timedelta
+import matplotlib.pyplot as plt
+import math
+
+#Åpne filene og legge verdiene til i forskjellige lister
+def csv_til_lister(csvfil, liste1, liste2, liste3, liste4, liste5):
+    with open(csvfil, newline="") as csvfile:
+        csv_verdier = csv.reader(csvfile, delimiter=";")
+        for row in csv_verdier:
+            row = [cell.replace(',', '.') for cell in row]
+            if len(row) == 5:
+                if not any("am" in cell.lower() or "pm" in cell.lower() for cell in row):
+                    liste1.append(row[0])
+                    liste2.append(row[1])
+                    liste3.append(row[2])
+                    liste4.append(row[3])
+                    liste5.append(row[4])
+    return liste1, liste2, liste3, liste4, liste5
+
+def del_csv_fil(csvfil, Sirdal_fil, Sauda_fil, delingspunkt):
+    with open(csvfil, newline="") as csvfile, \
+         open(Sirdal_fil, 'w', newline="") as Sirdal, \
+         open(Sauda_fil, 'w', newline="") as Sauda:
+        
+        csv_verdier = csv.reader(csvfile, delimiter=";")
+        Sirdal_writer = csv.writer(Sirdal, delimiter=";")
+        Sauda_writer = csv.writer(Sauda, delimiter=";")
+        
+        Sauda_startet = False
+        for row in csv_verdier:
+            if row[0].startswith(delingspunkt):
+                Sauda_startet = True
+            if Sauda_startet:
+                Sauda_writer.writerow(row)
+            else:
+                Sirdal_writer.writerow(row)
+
+# Bruk funksjonen til å dele filen
+del_csv_fil('temperatur_trykk_sauda_sinnes_samme_tidsperiode.csv.txt', 'Sirdal.csv', 'Sauda.csv', 'Sauda')
+
+datoer_fil_1, sekunder_fil_1, barometer_fil_1, abstrykk_fil_1, temp_fil_1 = [], [], [], [], []
+tull_fil_2, tull2_fil_2, tider_fil_2, temp_fil_2, trykk_fil_2 = [], [], [], [], []
+tull_fil_3_sirdal, tull2_fil_3_sirdal, tider_fil_3_sirdal, temp_fil_3_sirdal, trykk_fil_3_sirdal = [], [], [], [], []
+tull_fil_3_sauda, tull2_fil_3_sauda, tider_fil_3_sauda, temp_fil_3_sauda, trykk_fil_3_sauda = [], [], [], [], []
+
+csv_til_lister('trykk_og_temperaturlogg_rune_time.csv.txt', datoer_fil_1, sekunder_fil_1, barometer_fil_1, abstrykk_fil_1, temp_fil_1)
+csv_til_lister('temperatur_trykk_met_samme_rune_time_datasett.csv.txt', tull_fil_2, tull2_fil_2, tider_fil_2, temp_fil_2, trykk_fil_2)
+csv_til_lister('Sirdal.csv', tull_fil_3_sirdal, tull2_fil_3_sirdal, tider_fil_3_sirdal, temp_fil_3_sirdal, trykk_fil_3_sirdal)
+csv_til_lister('Sauda.csv', tull_fil_3_sauda, tull2_fil_3_sauda, tider_fil_3_sauda, temp_fil_3_sauda, trykk_fil_3_sauda)
+
+#Fjerne verdier vi ikke trenger
+del datoer_fil_1[0]
+del sekunder_fil_1[0]
+del barometer_fil_1[0]
+del abstrykk_fil_1[0]
+del temp_fil_1[0]
+del tull_fil_2
+del tull2_fil_2
+del tider_fil_2[0]
+del tider_fil_2[-1]
+del temp_fil_2[0]
+del temp_fil_2[-1]
+del trykk_fil_2[0]
+del trykk_fil_2[-1]
+del tull_fil_3_sauda
+del tull2_fil_3_sauda
+del tull_fil_3_sirdal
+del tull2_fil_3_sirdal
+del tider_fil_3_sirdal[0]
+del tider_fil_3_sirdal[-1]
+del tider_fil_3_sauda[-1]
+del temp_fil_3_sirdal[0]
+del temp_fil_3_sirdal[-1]
+del temp_fil_3_sauda[-1]
+del trykk_fil_3_sirdal[0]
+del trykk_fil_3_sirdal[-1]
+del trykk_fil_3_sauda[-1]
+
+def str_til_float(liste):
+    for i in range(len(liste)):
+        if liste[i] is None or liste[i] == '':
+            continue
+        else:
+            liste[i] = float(liste[i])
+    return liste
+
+
+str_til_float(barometer_fil_1)
+str_til_float(abstrykk_fil_1)
+str_til_float(temp_fil_1)
+str_til_float(temp_fil_2)
+str_til_float(trykk_fil_2)
+str_til_float(temp_fil_3_sirdal)
+str_til_float(trykk_fil_3_sirdal)
+str_til_float(temp_fil_3_sauda)
+str_til_float(trykk_fil_3_sauda)
+
+
+#Tidene blir gjort om til datetime objekter
+datetime_fil_1 = []
+
+for datoer_str, sekunder in zip(datoer_fil_1, sekunder_fil_1):
+    datoer_datetime = datetime.strptime(datoer_str, "%m.%d.%Y %H:%M")
+    if int(sekunder)%60==0:
+        sekunder = 0
+        datoer_datetime += timedelta(seconds=int(sekunder))
+        datetime_fil_1.append(datoer_datetime)
+    if (int(sekunder)-50)%60==0:
+        sekunder = 50
+        datoer_datetime += timedelta(seconds=int(sekunder))
+        datetime_fil_1.append(datoer_datetime)
+    if (int(sekunder)-40)%60==0:
+        sekunder = 40
+        datoer_datetime += timedelta(seconds=int(sekunder))
+        datetime_fil_1.append(datoer_datetime)
+    if (int(sekunder)-30)%60==0:
+        sekunder = 30
+        datoer_datetime += timedelta(seconds=int(sekunder))
+        datetime_fil_1.append(datoer_datetime)
+    if (int(sekunder)-20)%60==0:
+        sekunder = 20
+        datoer_datetime += timedelta(seconds=int(sekunder))
+        datetime_fil_1.append(datoer_datetime)
+    if (int(sekunder)-10)%60 == 0:
+        sekunder = 10
+        datoer_datetime += timedelta(seconds=int(sekunder))
+        datetime_fil_1.append(datoer_datetime)
+
+datetime_fil_2 = [datetime.strptime(tid, "%d.%m.%Y %H:%M") for tid in tider_fil_2]
+datetime_fil_3_sirdal = [datetime.strptime(tid, "%d.%m.%Y %H:%M") for tid in tider_fil_3_sirdal]
+datetime_fil_3_sauda = [datetime.strptime(tid, "%d.%m.%Y %H:%M") for tid in tider_fil_3_sauda]
+
+#Finne temperaturfall
+start_time = datetime.strptime("06.11.2021", "%m.%d.%Y")
+end_time = datetime.strptime("06.12.2021", "%m.%d.%Y")
+
+def maxmintemp(templiste, tidliste, starttid, slutttid, maxminliste, maxmintidliste):
+    startindeks1, startindeks2, sluttindeks1, sluttindeks2 = None, None, None, None
+    maxtemptid, mintemptid = [],[]
+    for tid in tidliste:
+        if tid.date() == starttid.date():
+            maxtemptid.append(tid)
+        if tid.date() == slutttid.date():
+            mintemptid.append(tid)
+    startindeks1 = tidliste.index(maxtemptid[0])
+    startindeks2 = tidliste.index(maxtemptid[-1])
+    sluttindeks1 = tidliste.index(mintemptid[0])
+    sluttindeks2 = tidliste.index(mintemptid[-1])
+    for i in  range(startindeks1, startindeks2 + 1):        
+            if float(templiste[i])>float(maxminliste[0]):
+                maxminliste[0] = float(templiste[i])
+                maxmintidliste[0] = tidliste[i]
+    for i in range(sluttindeks1, sluttindeks2 + 1):         
+            if float(templiste[i])<float(maxminliste[1]):
+                maxminliste[1] = float(templiste[i])
+                maxmintidliste[1] = tidliste[i]
+    return maxminliste, maxmintidliste
+    
+
+maxmintemp_fil_1 = [float("-inf"), float("inf")]
+maxmintid_fil_1 =[1,2]
+
+maxmintemp(temp_fil_1, datetime_fil_1, start_time, end_time, maxmintemp_fil_1, maxmintid_fil_1)
+
+maxmintemp_fil_2 = [float("-inf"), float("inf")]
+maxmintid_fil_2 = [1,2]
+
+maxmintemp(temp_fil_2, datetime_fil_2, start_time, end_time, maxmintemp_fil_2, maxmintid_fil_2)
+
+# Lag en figur og en akse
+fig, ax = plt.subplots()
+
+# Plott tempfall fra den første filen
+ax.plot(maxmintid_fil_1, maxmintemp_fil_1, label='Temperaturfall første fil', color='blue')
+
+# Plott tempfall fra den andre filen
+ax.plot(maxmintid_fil_2, maxmintemp_fil_2, label='Temperaturfall andre fil', color='green')
+
+ax.set(xlabel='Tid', ylabel='Temperatur', title='Temperatur (Celsius')
+
+ax.legend()
+
+plt.xticks(rotation=45)
+
+plt.tight_layout()
+
+plt.show()
+
+#Histogram verdier
+temperaturer_fil_1_og_fil_2 = temp_fil_1 + temp_fil_2
+
+plt.hist(temperaturer_fil_1_og_fil_2, bins=range(int(min(temperaturer_fil_1_og_fil_2)), int(max(temperaturer_fil_1_og_fil_2)) + 2), edgecolor='black')
+
+plt.xlabel('Temperatur (Celsius)')
+plt.ylabel('Frekvens')
+plt.title('Histogram over temperaturer')
+
+plt.show()
+
+
+barometrisk_trykk_sammenlign, absolutt_trykk_sammenlign, sammenligning_trykk_tider =[], [], []
+for i in range(len(barometer_fil_1)):
+        if barometer_fil_1[i] is None or barometer_fil_1[i] == '':
+            continue
+        else:
+            barometrisk_trykk_sammenlign.append(barometer_fil_1[i])
+            absolutt_trykk_sammenlign.append(abstrykk_fil_1[i])
+            sammenligning_trykk_tider.append(datetime_fil_1[i])
+
+
+absolutt_avg_trykk, barometrisk_avg_trykk, tider_avg_bartrykk, tider_avg_abstrykk = [], [], [], []
+
+def gjennomssnittrykk(tider, trykk, avg_trykk_liste, avg_tider, n):
+    for i in range(n, len(trykk) - n):
+        avg_tider.append(tider[i])
+        avg_trykk_liste.append(float(sum(trykk[i - n:i + n + 1]) / (2 * n + 1)))
+    return avg_tider, avg_trykk_liste
+
+gjennomssnittrykk(sammenligning_trykk_tider, barometrisk_trykk_sammenlign, barometrisk_avg_trykk, tider_avg_bartrykk, 10)
+gjennomssnittrykk(sammenligning_trykk_tider, absolutt_trykk_sammenlign, absolutt_avg_trykk, tider_avg_abstrykk, 10)
+
+fig2, tx = plt.subplots()
+
+tx.plot(tider_avg_bartrykk, barometrisk_avg_trykk, label='Gjennomsnitt barometrisk trykk', color='green')
+
+tx.plot(tider_avg_abstrykk, absolutt_avg_trykk, label='Gjennomsnitt absolutt trykk', color='blue')
+
+tx.set(xlabel='Tid', ylabel='Trykk', title='Trykk (bar)')
+
+tx.legend()
+
+plt.xticks(rotation=45)
+
+plt.tight_layout()
+
+plt.show()
+
+fig3, gx = plt.subplots()
+
+gx.plot(datetime_fil_2, temp_fil_2, label='Temperatur Sola', color='green')
+
+gx.plot(datetime_fil_3_sirdal, temp_fil_3_sirdal, label='Temperatur Sirdal', color='blue')
+
+gx.plot(datetime_fil_3_sauda, temp_fil_3_sauda, label='Temperatur Sauda', color='red')
+
+gx.set(xlabel='Tid', ylabel='Temperatur', title='Temperatur (celcius)')
+
+gx.legend()
+
+plt.xticks(rotation=45)
+
+plt.tight_layout()
+
+plt.show()
+
+def liste_avg(liste):
+    x=0
+    for i in liste:
+        x += float(i)
+    avg = x/len(liste)
+    return avg
+
+
+def differanse_verdier_lister(liste1, liste2, tidliste1, tidliste2):
+    differanse_liste = []
+    for i in range(len(tidliste1)):
+        for index in range(len(tidliste2)):
+            if tidliste2[index] == tidliste1[i]:
+                differanse_liste.append(abs(liste1[i]-liste2[index]))
+    return differanse_liste
+
+
+for i in range(len(abstrykk_fil_1)):
+    abstrykk_fil_1[i] = abstrykk_fil_1[i]*10
+
+Temp_fil_1og2_diff = differanse_verdier_lister(temp_fil_2, temp_fil_1, datetime_fil_2, datetime_fil_1)
+Trykk_fil_1og2_diff = differanse_verdier_lister(trykk_fil_2, abstrykk_fil_1, datetime_fil_2, datetime_fil_1)
+
+avg_diff_temp_1og2 = liste_avg(Temp_fil_1og2_diff)
+avg_diff_trykk_1og2 = liste_avg(Trykk_fil_1og2_diff)
+
+Storst_diff_temp_tid = datetime_fil_2[Temp_fil_1og2_diff.index(max(Temp_fil_1og2_diff))]
+Storst_diff_trykk_tid = datetime_fil_2[Trykk_fil_1og2_diff.index(max(Trykk_fil_1og2_diff))]
+Minst_diff_temp_tid = datetime_fil_2[Temp_fil_1og2_diff.index(min(Temp_fil_1og2_diff))]
+Minst_diff_trykk_tid = datetime_fil_2[Trykk_fil_1og2_diff.index(min(Trykk_fil_1og2_diff))]
+
+print(avg_diff_temp_1og2, avg_diff_trykk_1og2, Storst_diff_temp_tid, Minst_diff_temp_tid, Storst_diff_trykk_tid, Minst_diff_trykk_tid)
+
+
+def gjennomssnittemp(times, temperatures, n):
+    avg_times = []
+    avg_temps = []
+    for i in range(n, len(temperatures) - n):
+        avg_times.append(times[i])
+        avg_temps.append(sum(temperatures[i - n:i + n + 1]) / (2 * n + 1))
+    return avg_times, avg_temps
+
+
+avg_tider_fil_1, avg_temp_fil_1 = gjennomssnittemp(datetime_fil_1, temp_fil_1, n=30)
+
+def standardavik(temperatures, gjennomsnitt, n):
+    stadav_temps = []
+    for i in range(n, len(temperatures) - n):
+        x = 0
+        for indeks in range(i-n, i+n+1):
+            x += ((temperatures[indeks]-gjennomsnitt[i-n])**2)
+        stadav_temps.append(math.sqrt(x / (2 * n)))
+    return stadav_temps
+
+
+standardavik_temp_fil_1 = standardavik(temp_fil_1, avg_temp_fil_1, n=30)
+
+plt.errorbar(avg_tider_fil_1, avg_temp_fil_1, yerr=standardavik_temp_fil_1, errorevery=30, fmt='o', capsize=5)
+
+plt.xlabel('Tid')
+
+plt.ylabel('Temperatur (celcius)')
+
+plt.tight_layout()
+
+plt.show()
